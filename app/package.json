@@ -1,0 +1,18 @@
+{
+  "name": "aws-3-tier-ha-webapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js application for an AWS three-tier highly available web application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.800.0",
+    "mysql2": "^3.14.1"
+  }
+}

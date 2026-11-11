@@ -1,0 +1,152 @@
+
+---
+- name: Configure the web tier
+  hosts: web
+  become: true
+
+  vars:
+    web_root: /var/www/three-tier-webapp
+
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.dnf:
+        name: nginx
+        state: present
+
+    - name: Create the web application directory
+      ansible.builtin.file:
+        path: "{{ web_root }}"
+        state: directory
+        owner: nginx
+        group: nginx
+        mode: "0755"
+
+    - name: Deploy the web page
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../app/web/index.html"
+        dest: "{{ web_root }}/index.html"
+        owner: nginx
+        group: nginx
+        mode: "0644"
+
+    - name: Configure Nginx
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/templates/nginx.conf.j2"
+        dest: /etc/nginx/conf.d/three-tier-webapp.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart Nginx
+
+    - name: Validate Nginx configuration
+      ansible.builtin.command: nginx -t
+      changed_when: false
+
+    - name: Enable and start Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Restart Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+
+- name: Configure the application tier
+  hosts: app
+  become: true
+
+  vars:
+    app_root: /opt/three-tier-webapp
+    app_user: three-tier-app
+
+  tasks:
+    - name: Install Node.js and npm
+      ansible.builtin.dnf:
+        name:
+          - nodejs
+          - npm
+        state: present
+
+    - name: Create the application service account
+      ansible.builtin.user:
+        name: "{{ app_user }}"
+        system: true
+        create_home: false
+        shell: /sbin/nologin
+        state: present
+
+    - name: Create the application directory
+      ansible.builtin.file:
+        path: "{{ app_root }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0750"
+
+    - name: Copy application files
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../app/"
+        dest: "{{ app_root }}/"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: preserve
+
+    - name: Install production dependencies
+      ansible.builtin.command:
+        argv:
+          - npm
+          - ci
+          - --omit=dev
+      args:
+        chdir: "{{ app_root }}"
+      become_user: "{{ app_user }}"
+      environment:
+        HOME: /tmp
+      register: npm_install
+      changed_when: "'added' in npm_install.stdout or 'changed' in npm_install.stdout"
+
+    - name: Install the application systemd service
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/three-tier-webapp.service
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=Three-Tier Node.js Web Application
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          User={{ app_user }}
+          Group={{ app_user }}
+          WorkingDirectory={{ app_root }}
+          Environment=PORT=4000
+          Environment=AWS_REGION={{ aws_region }}
+          Environment=DB_SECRET_ARN={{ db_secret_arn }}
+          Environment=DB_NAME={{ db_name }}
+          ExecStart=/usr/bin/npm start
+          Restart=on-failure
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+      notify: Restart application
+
+    - name: Enable and start the application service
+      ansible.builtin.systemd:
+        name: three-tier-webapp
+        enabled: true
+        state: started
+        daemon_reload: true
+
+  handlers:
+    - name: Restart application
+      ansible.builtin.systemd:
+        name: three-tier-webapp
+        state: restarted
+        daemon_reload: true

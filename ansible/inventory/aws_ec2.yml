@@ -1,0 +1,21 @@
+
+---
+plugin: amazon.aws.aws_ec2
+
+regions:
+  - ap-south-1
+
+filters:
+  instance-state-name: running
+  tag:Project: aws-3-tier-ha-webapp
+  tag:Environment: dev
+
+hostnames:
+  - instance-id
+
+groups:
+  web: ec2_tags.Tier == 'web'
+  app: ec2_tags.Tier == 'application'
+
+compose:
+  ansible_connection: '"amazon.aws.aws_ssm"'

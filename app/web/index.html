@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AWS three-tier highly available web application">
+  <title>Cloud Architecture | Three-Tier Web App</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6fb;
+      color: #172b4d;
+    }
+
+    header {
+      padding: 22px 8%;
+      background: #102a43;
+      color: white;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    main {
+      max-width: 950px;
+      margin: 55px auto;
+      padding: 0 22px;
+    }
+
+    .hero {
+      padding: 36px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 8px 28px rgba(16, 42, 67, 0.08);
+    }
+
+    .status {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 20px;
+      background: #e1f7e9;
+      color: #176b3a;
+      font-size: 0.9rem;
+    }
+
+    h2 {
+      margin-top: 22px;
+      font-size: 2rem;
+    }
+
+    .description {
+      color: #526579;
+      line-height: 1.7;
+    }
+
+    .services {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .service {
+      padding: 20px;
+      background: #f7f9fc;
+      border: 1px solid #dce5ef;
+      border-radius: 10px;
+    }
+
+    .service h3 {
+      margin-top: 0;
+    }
+
+    button {
+      margin-top: 22px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 7px;
+      background: #1769aa;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background: #104d80;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: 16px;
+      background: #102a43;
+      color: #e7f1ff;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      padding: 25px;
+      text-align: center;
+      color: #627d98;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Cloud Architecture</h1>
+  </header>
+
+  <main>
+    <section class="hero">
+      <span class="status">Three-Tier Architecture</span>
+      <h2>Highly Available Web Application</h2>
+      <p class="description">
+        A cloud application designed around network isolation, load balancing,
+        automated infrastructure provisioning and centralized database services.
+      </p>
+
+      <div class="services">
+        <article class="service">
+          <h3>Web Tier</h3>
+          <p>Receives incoming requests and forwards application traffic.</p>
+        </article>
+
+        <article class="service">
+          <h3>Application Tier</h3>
+          <p>Processes requests through a Node.js service.</p>
+        </article>
+
+        <article class="service">
+          <h3>Database Tier</h3>
+          <p>Designed for managed relational data storage using Amazon RDS.</p>
+        </article>
+      </div>
+
+      <button id="checkButton" type="button">Check Application API</button>
+      <pre id="result">Select the button to check the application service.</pre>
+    </section>
+  </main>
+
+  <footer>
+    AWS 3-Tier Highly Available Web Application
+  </footer>
+
+  <script>
+    const button = document.getElementById("checkButton");
+    const result = document.getElementById("result");
+
+    button.addEventListener("click", async () => {
+      result.textContent = "Checking application service...";
+
+      try {
+        const response = await fetch("/api");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "The API request failed.");
+        }
+
+        result.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        result.textContent =
+          "The application API could not be reached. " +
+          "Check the web proxy and application service configuration.";
+      }
+    });
+  </script>
+</body>
+</html>

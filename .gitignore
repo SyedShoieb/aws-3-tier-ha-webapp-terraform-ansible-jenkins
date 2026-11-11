@@ -1,0 +1,30 @@
+
+# Terraform working directory
+**/.terraform/*
+
+# Terraform state and crash logs
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Local variable files may contain secrets
+*.tfvars
+*.tfvars.json
+
+# Keep Terraform's dependency lock file tracked
+!.terraform.lock.hcl
+
+# Sensitive local environment files
+.env
+.env.*
+!.env.example
+
+# Ansible retry files
+*.retry
+
+# Editor and operating-system files
+.vscode/
+.DS_Store
+Thumbs.db
+node_modules/
