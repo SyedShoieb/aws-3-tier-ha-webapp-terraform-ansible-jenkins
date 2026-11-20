@@ -57,3 +57,13 @@ output "application_url" {
     "http://${aws_lb.web.dns_name}"
   )
 }
+
+output "aws_region" {
+  description = "AWS region used by the project"
+  value       = var.aws_region
+}
+
+output "db_name" {
+  description = "Name of the application database"
+  value       = var.db_name
+}
