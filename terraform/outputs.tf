@@ -67,3 +67,9 @@ output "db_name" {
   description = "Name of the application database"
   value       = var.db_name
 }
+
+
+output "ansible_ssm_bucket_name" {
+  description = "S3 bucket used by Ansible AWS SSM connection for file transfers"
+  value       = aws_s3_bucket.ansible_ssm.id
+}

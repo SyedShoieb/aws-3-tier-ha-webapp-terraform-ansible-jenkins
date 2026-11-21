@@ -14,12 +14,13 @@ TERRAFORM_DIR = PROJECT_ROOT / "terraform"
 OUTPUT_FILE = PROJECT_ROOT / "ansible" / "generated-vars.json"
 
 
-# These are the Terraform outputs required by our Ansible playbook.
+# Terraform outputs required by our Ansible deployment.
 REQUIRED_OUTPUTS = [
     "aws_region",
     "db_name",
     "rds_secret_arn",
     "app_alb_dns_name",
+    "ansible_ssm_bucket_name",
 ]
 
 
@@ -41,10 +42,11 @@ def get_terraform_outputs():
         )
 
     except subprocess.CalledProcessError as error:
+        details = error.stderr.strip() or str(error)
         raise RuntimeError(
             "Could not retrieve Terraform outputs. "
-            "Check that Terraform has been initialized and applied."
-            f"\nDetails: {error.stderr.strip()}"
+            "Check that Terraform has been initialized and applied. "
+            f"\nDetails: {details}"
         )
 
     try:
@@ -72,7 +74,8 @@ def generate_ansible_variables(outputs):
     }
 
     empty_outputs = [
-        name for name, value in values.items()
+        name
+        for name, value in values.items()
         if not isinstance(value, str) or not value.strip()
     ]
 
@@ -82,12 +85,17 @@ def generate_ansible_variables(outputs):
             f"{', '.join(empty_outputs)}"
         )
 
-    # Map Terraform's output name to the variable name used by Ansible.
+    # Map Terraform outputs to the variables used by Ansible.
     ansible_variables = {
+        # Application configuration.
         "aws_region": values["aws_region"],
         "db_name": values["db_name"],
         "db_secret_arn": values["rds_secret_arn"],
         "app_load_balancer_dns_name": values["app_alb_dns_name"],
+
+        # AWS Systems Manager connection configuration.
+        "ansible_aws_ssm_region": values["aws_region"],
+        "ansible_aws_ssm_bucket_name": values["ansible_ssm_bucket_name"],
     }
 
     return ansible_variables
