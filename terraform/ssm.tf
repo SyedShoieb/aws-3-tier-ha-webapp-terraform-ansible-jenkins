@@ -1,6 +1,4 @@
-
 # Identify the AWS account so the bucket name is globally unique.
-data "aws_caller_identity" "current" {}
 
 # Dedicated S3 bucket for Ansible SSM file transfers.
 resource "aws_s3_bucket" "ansible_ssm" {
