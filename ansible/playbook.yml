@@ -63,12 +63,21 @@
     app_user: three-tier-app
 
   tasks:
-    - name: Install Node.js and npm
+    - name: Install Node.js 24 and npm
       ansible.builtin.dnf:
         name:
-          - nodejs
-          - npm
+          - nodejs24
+          - nodejs24-npm
         state: present
+
+    - name: Select Node.js 24 as the active runtime
+      ansible.builtin.command:
+        argv:
+          - alternatives
+          - --set
+          - node
+          - /usr/bin/node-24
+      changed_when: false
 
     - name: Create the application service account
       ansible.builtin.user:

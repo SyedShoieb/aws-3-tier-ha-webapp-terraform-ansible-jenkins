@@ -1,4 +1,3 @@
-
 ---
 plugin: amazon.aws.aws_ec2
 
@@ -18,4 +17,4 @@ groups:
   app: ec2_tags.Tier == 'application'
 
 compose:
-  ansible_connection: '"amazon.aws.aws_ssm"'
+  ansible_connection:  "'amazon.aws.aws_ssm'"
